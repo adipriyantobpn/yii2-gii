@@ -43,7 +43,8 @@ class Generator extends \yii\gii\Generator
     public $queryNs = 'app\models';
     public $queryClass;
     public $queryBaseClass = 'yii\db\ActiveQuery';
-    // @TODO - extended model/query generation SHOULD BE CONFIGURABLE via boolean property
+    // COMPLETED_TODO - extended model/query regeneration SHOULD BE CONFIGURABLE via boolean property
+    public $regenerateExtendedFile = false;
     // COMPLETED_TODO - generate extended model file
     public $extendedModelNs; // = 'app\models\extended';
     // COMPLETED_TODO - generate extended query file
@@ -243,9 +244,12 @@ class Generator extends \yii\gii\Generator
                 $this->render('model.php', $params)
             );
             // COMPLETED_TODO - generate extended model file
-            if ($this->extendedModelNs && file_exists($this->templatePath . DIRECTORY_SEPARATOR . 'model-extended.php')) {
+            // COMPLETED_TODO - extended model/query regeneration SHOULD BE CONFIGURABLE via boolean property
+            $extendedFilePath = Yii::getAlias('@' . str_replace('\\', '/', $this->extendedModelNs)) . '/' . $modelClassName . '.php';
+            if ($this->extendedModelNs && file_exists($this->templatePath . DIRECTORY_SEPARATOR . 'model-extended.php') &&
+                ($this->regenerateExtendedFile || !file_exists($extendedFilePath))) {
                 $files[] = new CodeFile(
-                    Yii::getAlias('@' . str_replace('\\', '/', $this->extendedModelNs)) . '/' . $modelClassName . '.php',
+                    $extendedFilePath,
                     $this->render('model-extended.php', $params)
                 );
             }
@@ -260,11 +264,14 @@ class Generator extends \yii\gii\Generator
                 );
             }
             // COMPLETED_TODO - generate extended query file
-            if ($queryClassName && $this->extendedQueryNs && file_exists($this->templatePath . DIRECTORY_SEPARATOR . 'query-extended.php')) {
+            // COMPLETED_TODO - extended model/query regeneration SHOULD BE CONFIGURABLE via boolean property
+            $extendedFilePath = Yii::getAlias('@' . str_replace('\\', '/', $this->extendedQueryNs)) . '/' . $queryClassName . '.php';
+            if ($queryClassName && $this->extendedQueryNs && file_exists($this->templatePath . DIRECTORY_SEPARATOR . 'query-extended.php') &&
+                ($this->regenerateExtendedFile || !file_exists($extendedFilePath))) {
                 $params['className'] = $queryClassName;
                 $params['modelClassName'] = $modelClassName;
                 $files[] = new CodeFile(
-                    Yii::getAlias('@' . str_replace('\\', '/', $this->extendedQueryNs)) . '/' . $queryClassName . '.php',
+                    $extendedFilePath,
                     $this->render('query-extended.php', $params)
                 );
             }

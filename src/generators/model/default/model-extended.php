@@ -46,4 +46,19 @@ class <?= $className ?> extends <?= '\\' . ltrim($generator->ns .'\\'. $classNam
     }
 <?php endif; ?>
 <?php // @TODO - rules() generation SHOULD BE CONFIGURABLE, whether it is generated in extended model, instead of in base model ?>
+<?php // COMPLETED_TODO - extended model/query regeneration SHOULD BE CONFIGURABLE via boolean property ?>
+<?php if ($queryClassName && $generator->extendedQueryNs): ?>
+<?php
+    $queryClassFullName = ($generator->extendedModelNs === $generator->extendedQueryNs) ? $queryClassName : '\\' . $generator->extendedQueryNs . '\\' . $queryClassName;
+    echo "\n";
+?>
+    /**
+     * {@inheritdoc}
+     * @return <?= $queryClassFullName ?> the active query used by this AR class.
+     */
+    public static function find()
+    {
+        return new <?= $queryClassFullName ?>(get_called_class());
+    }
+<?php endif; ?>
 }
