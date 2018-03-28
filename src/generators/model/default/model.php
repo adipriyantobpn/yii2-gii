@@ -65,6 +65,53 @@ class <?= $className ?> extends <?= '\\' . ltrim($generator->baseClass, '\\') . 
 
     /**
      * {@inheritdoc}
+     *
+     * Returns list of the columns whose values have been populated into this record.
+     */
+    public function fields()
+    {
+        $parentFields = parent::fields();
+        $fields = array_merge($parentFields, [
+<?php $baseClassReflection = new \ReflectionClass($generator->baseClass); if ($baseClassReflection->hasMethod('getInfo')): ?>
+            'info' => function ($model) { /** @var $model \<?= $generator->baseClass ?> */
+                return $model->getInfo();
+            },
+<?php endif; ?>
+<?php foreach ($properties as $property => $data): ?>
+            // '<?= $property ?>' => '<?= $property ?>',
+<?php endforeach; ?>
+        ]);
+
+<?php // @TODO - authentication & other sensitive column names SHOULD BE LISTED here by using regex ?>
+        /* Should remove fields that contain sensitive information */
+        // unset(
+        //     $fields['auth_key'], // EXAMPLE
+        //     $fields['password_hash'],
+        //     $fields['password_reset_token']
+        // );
+
+        return $fields;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * Returns the list of the relations that have been populated into this record.
+     */
+    public function extraFields()
+    {
+        $parentExtraFields = parent::extraFields();
+        $extraFields = array_merge($parentExtraFields, [
+<?php foreach ($relations as $name => $relation): ?>
+            // '<?= lcfirst($name) ?>' => '<?= lcfirst($name) ?>',
+<?php endforeach; ?>
+        ]);
+
+        return $extraFields;
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function attributeLabels()
     {
