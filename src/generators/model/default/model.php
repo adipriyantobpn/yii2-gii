@@ -15,6 +15,9 @@
 /* @var $rulesFromRelation string[] list of validation rules which generated from related tables */
 /* @var $relations array list of relations (name => relation declaration) */
 
+// COMPLETED_TODO - sort relations
+$relations = $generator->sortRelation($relations);
+
 echo "<?php\n";
 ?>
 
