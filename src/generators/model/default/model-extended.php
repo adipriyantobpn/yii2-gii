@@ -12,6 +12,7 @@
 /* @var $properties array list of properties (property => [type, name. comment]) */
 /* @var $labels string[] list of attribute labels (name => label) */
 /* @var $rules string[] list of validation rules */
+/* @var $rulesFromRelation string[] list of validation rules which generated from related tables */
 /* @var $relations array list of relations (name => relation declaration) */
 
 echo "<?php\n";
@@ -38,7 +39,8 @@ class <?= $className ?> extends <?= '\\' . ltrim($generator->ns .'\\'. $classNam
 {
 <?php if ($generator->db !== 'db'): ?>
     /**
-     * @return null|object|\yii\db\Connection the database connection used by this AR class.
+     * @return \yii\db\Connection the database connection used by this AR class.
+     * @throws \yii\base\InvalidConfigException
      */
     public static function getDb()
     {
@@ -46,6 +48,28 @@ class <?= $className ?> extends <?= '\\' . ltrim($generator->ns .'\\'. $classNam
     }
 <?php endif; ?>
 <?php // @TODO - rules() generation SHOULD BE CONFIGURABLE, whether it is generated in extended model, instead of in base model ?>
+<?php // COMPLETED_TODO - relation-based rules SHOULD HAVE GENERATED also in extended model ?>
+
+    /**
+     * {@inheritdoc}
+     */
+    public function rules()
+    {
+        $rules = array_merge(parent::rules, [<?= empty($rulesFromRelation) ? '' : ("\n            " . implode(",\n            ", $rulesFromRelation) . ",\n        ") ?>]);
+
+        return $rules;
+    }
+<?php // COMPLETED_TODO - relation functions SHOULD HAVE GENERATED also in extended model ?>
+<?php foreach ($relations as $name => $relation): ?>
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function get<?= $name ?>()
+    {
+        <?= $relation[0] . "\n" ?>
+    }
+<?php endforeach; ?>
 <?php // COMPLETED_TODO - extended model/query regeneration SHOULD BE CONFIGURABLE via boolean property ?>
 <?php if ($queryClassName && $generator->extendedQueryNs): ?>
 <?php

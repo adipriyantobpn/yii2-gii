@@ -12,6 +12,7 @@
 /* @var $properties array list of properties (property => [type, name. comment]) */
 /* @var $labels string[] list of attribute labels (name => label) */
 /* @var $rules string[] list of validation rules */
+/* @var $rulesFromRelation string[] list of validation rules which generated from related tables */
 /* @var $relations array list of relations (name => relation declaration) */
 
 echo "<?php\n";
@@ -47,6 +48,7 @@ class <?= $className ?> extends <?= '\\' . ltrim($generator->baseClass, '\\') . 
 
     /**
      * @return \yii\db\Connection the database connection used by this AR class.
+     * @throws \yii\base\InvalidConfigException
      */
     public static function getDb()
     {

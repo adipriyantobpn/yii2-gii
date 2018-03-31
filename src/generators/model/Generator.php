@@ -53,6 +53,9 @@ class Generator extends \yii\gii\Generator
     // COMPLETED_TODO - static::getDb() generation in the base model SHOULD BE CONFIGURABLE via boolean property
     public $doNotGenerateGetDb = false;
 
+    // COMPLETED_TODO - relation-based rules SHOULD HAVE GENERATED also in extended model
+    private $_rulesFromRelation = [];
+
 
     /**
      * {@inheritdoc}
@@ -237,6 +240,8 @@ class Generator extends \yii\gii\Generator
                 'properties' => $this->generateProperties($tableSchema),
                 'labels' => $this->generateLabels($tableSchema),
                 'rules' => $this->generateRules($tableSchema),
+                // COMPLETED_TODO - relation-based rules SHOULD HAVE GENERATED also in extended model
+                'rulesFromRelation' => $this->_rulesFromRelation,
                 'relations' => isset($relations[$tableName]) ? $relations[$tableName] : [],
             ];
             $files[] = new CodeFile(
@@ -416,6 +421,7 @@ class Generator extends \yii\gii\Generator
         }
 
         // Exist rules for foreign keys
+        $this->_rulesFromRelation = []; // should be empty, every time processing each table
         foreach ($table->foreignKeys as $refs) {
             $refTable = $refs[0];
             $refTableSchema = $db->getTableSchema($refTable);
@@ -431,7 +437,10 @@ class Generator extends \yii\gii\Generator
                 $targetAttributes[] = "'$key' => '$value'";
             }
             $targetAttributes = implode(', ', $targetAttributes);
-            $rules[] = "[['$attributes'], 'exist', 'skipOnError' => true, 'targetClass' => $refClassName::class, 'targetAttribute' => [$targetAttributes]]";
+            $ruleFromRelation = "[['$attributes'], 'exist', 'skipOnError' => true, 'targetClass' => $refClassName::class, 'targetAttribute' => [$targetAttributes]]";
+            $rules[] = $ruleFromRelation;
+            // COMPLETED_TODO - relation-based rules SHOULD HAVE GENERATED also in extended model
+            $this->_rulesFromRelation[] = $ruleFromRelation;
         }
 
         return $rules;
