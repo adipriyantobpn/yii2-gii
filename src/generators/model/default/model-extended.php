@@ -39,7 +39,7 @@ class <?= $className ?> extends <?= '\\' . ltrim($generator->ns .'\\'. $classNam
 {
 <?php if ($generator->db !== 'db'): ?>
     /**
-     * @return \yii\db\Connection the database connection used by this AR class.
+     * @return object|null|\yii\db\Connection the database connection used by this AR class.
      * @throws \yii\base\InvalidConfigException
      */
     public static function getDb()

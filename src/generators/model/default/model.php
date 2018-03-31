@@ -44,10 +44,10 @@ class <?= $className ?> extends <?= '\\' . ltrim($generator->baseClass, '\\') . 
     {
         return '<?= $generator->generateTableName($tableName) ?>';
     }
-<?php if (!$generator->doNotGenerateGetDb && $generator->db !== 'db'): // COMPLETED_TODO - static::getDb() generation in the base model SHOULD BE CONFIGURABLE via boolean property ?>
+<?php if (!$generator->doNotGenerateGetDbInTheBaseModel && $generator->db !== 'db'): // COMPLETED_TODO - static::getDb() generation in the base model SHOULD BE CONFIGURABLE via boolean property ?>
 
     /**
-     * @return \yii\db\Connection the database connection used by this AR class.
+     * @return object|null|\yii\db\Connection the database connection used by this AR class.
      * @throws \yii\base\InvalidConfigException
      */
     public static function getDb()

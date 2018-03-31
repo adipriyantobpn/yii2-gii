@@ -43,6 +43,8 @@ class Generator extends \yii\gii\Generator
     public $queryNs = 'app\models';
     public $queryClass;
     public $queryBaseClass = 'yii\db\ActiveQuery';
+    // COMPLETED_TODO - extended model/query generation SHOULD BE CONFIGURABLE via boolean property
+    public $generateExtendedFile = false;
     // COMPLETED_TODO - extended model/query regeneration SHOULD BE CONFIGURABLE via boolean property
     public $regenerateExtendedFile = false;
     // COMPLETED_TODO - generate extended model file
@@ -51,7 +53,7 @@ class Generator extends \yii\gii\Generator
     public $extendedQueryNs; // = 'app\models\extended\query';
     // @TODO - rules() generation SHOULD BE CONFIGURABLE, whether it is generated in extended model, instead of in base model
     // COMPLETED_TODO - static::getDb() generation in the base model SHOULD BE CONFIGURABLE via boolean property
-    public $doNotGenerateGetDb = false;
+    public $doNotGenerateGetDbInTheBaseModel = false;
 
     // COMPLETED_TODO - relation-based rules SHOULD HAVE GENERATED also in extended model
     private $_rulesFromRelation = [];
@@ -96,8 +98,16 @@ class Generator extends \yii\gii\Generator
             [['generateLabelsFromComments', 'useTablePrefix', 'useSchemaName', 'generateQuery', 'generateRelationsFromCurrentSchema'], 'boolean'],
             [['enableI18N'], 'boolean'],
             [['messageCategory'], 'validateMessageCategory', 'skipOnEmpty' => false],
+            // COMPLETED_TODO - generate extended model file
+            // COMPLETED_TODO - generate extended query file
+            [['extendedModelNs', 'extendedQueryNs'], 'filter', 'filter' => 'trim'],
+            [['extendedModelNs', 'extendedQueryNs'], 'filter', 'filter' => function ($value) { return trim($value, '\\'); }],
+            [['extendedModelNs', 'extendedQueryNs'], 'match', 'pattern' => '/^[\w\\\\]+$/', 'message' => 'Only word characters and backslashes are allowed.'],
+            [['extendedModelNs', 'extendedQueryNs'], 'validateNamespace'],
+            // COMPLETED_TODO - extended model/query generation SHOULD BE CONFIGURABLE via boolean property
+            // COMPLETED_TODO - extended model/query regeneration SHOULD BE CONFIGURABLE via boolean property
             // COMPLETED_TODO - static::getDb() generation in the base model SHOULD BE CONFIGURABLE via boolean property
-            [['doNotGenerateGetDb'], 'boolean'],
+            [['generateExtendedFile', 'regenerateExtendedFile', 'doNotGenerateGetDbInTheBaseModel'], 'boolean'],
         ]);
     }
 
@@ -107,7 +117,7 @@ class Generator extends \yii\gii\Generator
     public function attributeLabels()
     {
         return array_merge(parent::attributeLabels(), [
-            'ns' => 'Namespace',
+            'ns' => 'Model Namespace',
             'db' => 'Database Connection ID',
             'tableName' => 'Table Name',
             'modelClass' => 'Model Class Name',
@@ -121,7 +131,7 @@ class Generator extends \yii\gii\Generator
             'queryBaseClass' => 'ActiveQuery Base Class',
             'useSchemaName' => 'Use Schema Name',
             // COMPLETED_TODO - static::getDb() generation in the base model SHOULD BE CONFIGURABLE via boolean property
-            'doNotGenerateGetDb' => 'Do not generate GetDb()',
+            'doNotGenerateGetDbInTheBaseModel' => 'Do not generate GetDb() in the base model',
         ]);
     }
 
@@ -162,9 +172,17 @@ class Generator extends \yii\gii\Generator
                 the namespace part as it is specified in "ActiveQuery Namespace". You do not need to specify the class name
                 if "Table Name" ends with asterisk, in which case multiple ActiveQuery classes will be generated.',
             'queryBaseClass' => 'This is the base class of the new ActiveQuery class. It should be a fully qualified namespaced class name.',
+            // COMPLETED_TODO - extended model/query generation SHOULD BE CONFIGURABLE via boolean property
+            'generateExtendedFile' => 'This indicates whether to generate extended files (both ActiveRecord & ActiveQuery) or not.',
+            // COMPLETED_TODO - extended model/query regeneration SHOULD BE CONFIGURABLE via boolean property
+            'regenerateExtendedFile' => 'This indicates whether to forcefully regenerate extended files (both ActiveRecord & ActiveQuery), if they are already exist, or not.',
+            // COMPLETED_TODO - generate extended model file
+            'extendedModelNs' => 'This is the namespace of the extended ActiveRecord class to be generated, default to <code>app\models\extended</code>',
+            // COMPLETED_TODO - generate extended query file
+            'extendedQueryNs' => 'This is the namespace of the extended ActiveQuery class to be generated, default to <code>app\models\extended\query</code>',
             // COMPLETED_TODO - static::getDb() generation in the base model SHOULD BE CONFIGURABLE via boolean property
-            'doNotGenerateGetDb' => 'This indicates whether the generator should generate <code>static::getDb()</code> in the base model or not.
-                By default, <code>static::getDb()</code> will be generated when gii/model not using default DB component',
+            'doNotGenerateGetDbInTheBaseModel' => 'This indicates whether the generator should generate <code>static::getDb()</code> in the base ActiveQuery or not.
+                By default, <code>static::getDb()</code> will be generated whenever gii/model is not using default DB component',
         ]);
     }
 
@@ -199,7 +217,9 @@ class Generator extends \yii\gii\Generator
      */
     public function stickyAttributes()
     {
-        return array_merge(parent::stickyAttributes(), ['ns', 'db', 'baseClass', 'generateRelations', 'generateLabelsFromComments', 'queryNs', 'queryBaseClass', 'useTablePrefix', 'generateQuery']);
+        return array_merge(parent::stickyAttributes(), ['ns', 'db', 'baseClass', 'generateRelations', 'generateLabelsFromComments', 'queryNs', 'queryBaseClass', 'useTablePrefix', 'generateQuery',
+            'generateExtendedFile', 'regenerateExtendedFile', 'extendedModelNs', 'extendedQueryNs', 'doNotGenerateGetDbInTheBaseModel',
+        ]);
     }
 
     /**
@@ -250,13 +270,15 @@ class Generator extends \yii\gii\Generator
             );
             // COMPLETED_TODO - generate extended model file
             // COMPLETED_TODO - extended model/query regeneration SHOULD BE CONFIGURABLE via boolean property
-            $extendedFilePath = Yii::getAlias('@' . str_replace('\\', '/', $this->extendedModelNs)) . '/' . $modelClassName . '.php';
-            if ($this->extendedModelNs && file_exists($this->templatePath . DIRECTORY_SEPARATOR . 'model-extended.php') &&
-                ($this->regenerateExtendedFile || !file_exists($extendedFilePath))) {
-                $files[] = new CodeFile(
-                    $extendedFilePath,
-                    $this->render('model-extended.php', $params)
-                );
+            if ($this->generateExtendedFile &&$this->extendedModelNs) {
+                $extendedFilePath = Yii::getAlias('@' . str_replace('\\', '/', $this->extendedModelNs)) . '/' . $modelClassName . '.php';
+                if (file_exists($this->templatePath . DIRECTORY_SEPARATOR . 'model-extended.php') &&
+                    ($this->regenerateExtendedFile || !file_exists($extendedFilePath))) {
+                    $files[] = new CodeFile(
+                        $extendedFilePath,
+                        $this->render('model-extended.php', $params)
+                    );
+                }
             }
 
             // query :
@@ -270,15 +292,17 @@ class Generator extends \yii\gii\Generator
             }
             // COMPLETED_TODO - generate extended query file
             // COMPLETED_TODO - extended model/query regeneration SHOULD BE CONFIGURABLE via boolean property
-            $extendedFilePath = Yii::getAlias('@' . str_replace('\\', '/', $this->extendedQueryNs)) . '/' . $queryClassName . '.php';
-            if ($queryClassName && $this->extendedQueryNs && file_exists($this->templatePath . DIRECTORY_SEPARATOR . 'query-extended.php') &&
-                ($this->regenerateExtendedFile || !file_exists($extendedFilePath))) {
-                $params['className'] = $queryClassName;
-                $params['modelClassName'] = $modelClassName;
-                $files[] = new CodeFile(
-                    $extendedFilePath,
-                    $this->render('query-extended.php', $params)
-                );
+            if ($this->generateExtendedFile && $this->extendedQueryNs) {
+                $extendedFilePath = Yii::getAlias('@' . str_replace('\\', '/', $this->extendedQueryNs)) . '/' . $queryClassName . '.php';
+                if ($queryClassName && file_exists($this->templatePath . DIRECTORY_SEPARATOR . 'query-extended.php') &&
+                    ($this->regenerateExtendedFile || !file_exists($extendedFilePath))) {
+                    $params['className'] = $queryClassName;
+                    $params['modelClassName'] = $modelClassName;
+                    $files[] = new CodeFile(
+                        $extendedFilePath,
+                        $this->render('query-extended.php', $params)
+                    );
+                }
             }
         }
 
