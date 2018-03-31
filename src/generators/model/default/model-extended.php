@@ -55,10 +55,31 @@ class <?= $className ?> extends <?= '\\' . ltrim($generator->ns .'\\'. $classNam
      */
     public function rules()
     {
-        $rules = array_merge(parent::rules, [<?= empty($rulesFromRelation) ? '' : ("\n            " . implode(",\n            ", $rulesFromRelation) . ",\n        ") ?>]);
+        $rules = array_merge(parent::rules(), [<?= empty($rulesFromRelation) ? '' : ("\n            " . implode(",\n            ", $rulesFromRelation) . ",\n        ") ?>]);
 
         return $rules;
     }
+<?php // COMPLETED_TODO - extended model/query regeneration SHOULD BE CONFIGURABLE via boolean property ?>
+<?php if ($queryClassName && $generator->extendedQueryNs): ?>
+<?php
+    $queryClassFullName = ($generator->extendedModelNs === $generator->extendedQueryNs) ? $queryClassName : '\\' . $generator->extendedQueryNs . '\\' . $queryClassName;
+    echo "\n";
+?>
+    // -- CUSTOM QUERY should be placed below --
+
+    /**
+     * {@inheritdoc}
+     * @return <?= $queryClassFullName ?> the active query used by this AR class.
+     */
+    public static function find()
+    {
+        return new <?= $queryClassFullName ?>(get_called_class());
+    }
+<?php endif; ?>
+<?php if (!empty($relations)): ?>
+
+    // -- RELATION FUNCTIONS should be placed below --
+<?php endif; ?>
 <?php // COMPLETED_TODO - relation functions SHOULD HAVE GENERATED also in extended model ?>
 <?php foreach ($relations as $name => $relation): ?>
 
@@ -70,19 +91,4 @@ class <?= $className ?> extends <?= '\\' . ltrim($generator->ns .'\\'. $classNam
         <?= $relation[0] . "\n" ?>
     }
 <?php endforeach; ?>
-<?php // COMPLETED_TODO - extended model/query regeneration SHOULD BE CONFIGURABLE via boolean property ?>
-<?php if ($queryClassName && $generator->extendedQueryNs): ?>
-<?php
-    $queryClassFullName = ($generator->extendedModelNs === $generator->extendedQueryNs) ? $queryClassName : '\\' . $generator->extendedQueryNs . '\\' . $queryClassName;
-    echo "\n";
-?>
-    /**
-     * {@inheritdoc}
-     * @return <?= $queryClassFullName ?> the active query used by this AR class.
-     */
-    public static function find()
-    {
-        return new <?= $queryClassFullName ?>(get_called_class());
-    }
-<?php endif; ?>
 }

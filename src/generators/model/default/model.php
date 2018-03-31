@@ -123,6 +123,27 @@ class <?= $className ?> extends <?= '\\' . ltrim($generator->baseClass, '\\') . 
 <?php endforeach; ?>
         ];
     }
+<?php // COMPLETED_TODO - extended model/query regeneration SHOULD BE CONFIGURABLE via boolean property ?>
+<?php if ($queryClassName && !$generator->extendedModelNs): ?>
+<?php
+    $queryClassFullName = ($generator->ns === $generator->queryNs) ? $queryClassName : '\\' . $generator->queryNs . '\\' . $queryClassName;
+    echo "\n";
+?>
+    // -- CUSTOM QUERY should be placed below --
+
+    /**
+     * {@inheritdoc}
+     * @return <?= $queryClassFullName ?> the active query used by this AR class.
+     */
+    public static function find()
+    {
+        return new <?= $queryClassFullName ?>(get_called_class());
+    }
+<?php endif; ?>
+<?php if (!empty($relations)): ?>
+
+    // -- RELATION FUNCTIONS should be placed below --
+<?php endif; ?>
 <?php foreach ($relations as $name => $relation): ?>
 
     /**
@@ -133,19 +154,4 @@ class <?= $className ?> extends <?= '\\' . ltrim($generator->baseClass, '\\') . 
         <?= $relation[0] . "\n" ?>
     }
 <?php endforeach; ?>
-<?php // COMPLETED_TODO - extended model/query regeneration SHOULD BE CONFIGURABLE via boolean property ?>
-<?php if ($queryClassName && !$generator->extendedModelNs): ?>
-<?php
-    $queryClassFullName = ($generator->ns === $generator->queryNs) ? $queryClassName : '\\' . $generator->queryNs . '\\' . $queryClassName;
-    echo "\n";
-?>
-    /**
-     * {@inheritdoc}
-     * @return <?= $queryClassFullName ?> the active query used by this AR class.
-     */
-    public static function find()
-    {
-        return new <?= $queryClassFullName ?>(get_called_class());
-    }
-<?php endif; ?>
 }
