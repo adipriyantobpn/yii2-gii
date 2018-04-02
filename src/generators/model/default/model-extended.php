@@ -41,6 +41,10 @@ echo $generator->generateDebugMessageGroup('relations-sorted (after sorted in th
     // COMPLETED_TODO - track relation array provided by model generator & the sorted one (for debugging purpose)
     'relationsSorted' => VarDumper::dumpAsString($relations),
 ]);
+echo $generator->generateDebugMessageGroup('table schema', [
+    // COMPLETED_TODO - track standard properties, provided by model-generator (for debugging purpose)
+    'tableSchema' => VarDumper::dumpAsString($tableSchema),
+]);
 ?>
 
 namespace <?= $generator->extendedModelNs ?>;
