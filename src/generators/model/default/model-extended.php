@@ -14,12 +14,24 @@
 /* @var $rules string[] list of validation rules */
 /* @var $rulesFromRelation string[] list of validation rules which generated from related tables */
 /* @var $relations array list of relations (name => relation declaration) */
+/* @var $uniqueIndexes array list of unique indexes for particular table, including primary-key (name => [columns]) */
+/* @var $uniqueIndexesSorted array uniquely-merged & sorted list of unique indexes for particular table, including primary-key (name => [columns]) */
 
 // COMPLETED_TODO - sort relations
 $relations = $generator->sortRelation($relations);
 
 echo "<?php\n";
 ?>
+
+/*
+<?php
+// COMPLETED_TODO - track unique-index from tables & the sorted one (for debugging purpose)
+echo '$uniqueIndexes = ' . \yii\helpers\VarDumper::dumpAsString($uniqueIndexes);
+echo "\n";
+echo '$uniqueIndexesSorted = ' . \yii\helpers\VarDumper::dumpAsString($uniqueIndexesSorted);
+echo "\n";
+?>
+*/
 
 namespace <?= $generator->extendedModelNs ?>;
 
@@ -42,7 +54,7 @@ class <?= $className ?> extends <?= '\\' . ltrim($generator->ns .'\\'. $classNam
 {
 <?php if ($generator->db !== 'db'): ?>
     /**
-     * @return object|null|\yii\db\Connection the database connection used by this AR class.
+     * @return null|\yii\db\Connection the database connection used by this AR class.
      * @throws \yii\base\InvalidConfigException
      */
     public static function getDb()

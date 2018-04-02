@@ -57,6 +57,9 @@ class Generator extends \yii\gii\Generator
 
     // COMPLETED_TODO - relation-based rules SHOULD HAVE GENERATED also in extended model
     private $_rulesFromRelation = [];
+    // COMPLETED_TODO - track unique-indexes from tables & the sorted one (for debugging purpose)
+    private $_uniqueIndexes;
+    private $_uniqueIndexesSorted;
 
 
     /**
@@ -263,6 +266,9 @@ class Generator extends \yii\gii\Generator
                 // COMPLETED_TODO - relation-based rules SHOULD HAVE GENERATED also in extended model
                 'rulesFromRelation' => $this->_rulesFromRelation,
                 'relations' => isset($relations[$tableName]) ? $relations[$tableName] : [],
+                // COMPLETED_TODO - track unique-indexes from tables & the sorted one (for debugging purpose)
+                'uniqueIndexes' => $this->_uniqueIndexes,
+                'uniqueIndexesSorted' => $this->_uniqueIndexesSorted,
             ];
             $files[] = new CodeFile(
                 Yii::getAlias('@' . str_replace('\\', '/', $this->ns)) . '/' . $modelClassName . '.php',
@@ -426,7 +432,11 @@ class Generator extends \yii\gii\Generator
         // Unique indexes rules
         try {
             $uniqueIndexes = array_merge($db->getSchema()->findUniqueIndexes($table), [$table->primaryKey]);
+            // COMPLETED_TODO - track unique-indexes from tables & the sorted one (for debugging purpose)
+            $this->_uniqueIndexes = $uniqueIndexes;
             $uniqueIndexes = array_unique($uniqueIndexes, SORT_REGULAR);
+            // COMPLETED_TODO - track unique-indexes from tables & the sorted one (for debugging purpose)
+            $this->_uniqueIndexesSorted = $uniqueIndexes;
             foreach ($uniqueIndexes as $uniqueColumns) {
                 // Avoid validating auto incremental columns
                 if (!$this->isColumnAutoIncremental($table, $uniqueColumns)) {
