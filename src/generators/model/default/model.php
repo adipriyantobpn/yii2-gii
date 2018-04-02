@@ -17,9 +17,6 @@
 /* @var $uniqueIndexes array list of unique indexes for particular table, including primary-key (name => [columns]) */
 /* @var $uniqueIndexesSorted array uniquely-merged & sorted list of unique indexes for particular table, including primary-key (name => [columns]) */
 
-// COMPLETED_TODO - sort relations
-$relations = $generator->sortRelation($relations);
-
 echo "<?php\n";
 ?>
 
@@ -29,6 +26,16 @@ echo "<?php\n";
 echo '$uniqueIndexes = ' . \yii\helpers\VarDumper::dumpAsString($uniqueIndexes);
 echo "\n";
 echo '$uniqueIndexesSorted = ' . \yii\helpers\VarDumper::dumpAsString($uniqueIndexesSorted);
+echo "\n";
+
+// COMPLETED_TODO - track relation array provided by model generator & the sorted one (for debugging purpose)
+echo "\n";
+echo '$relations = ' . \yii\helpers\VarDumper::dumpAsString($relations);
+// COMPLETED_TODO - sort relations
+$relations = $generator->sortRelation($relations);
+// COMPLETED_TODO - track relation array provided by model generator & the sorted one (for debugging purpose)
+echo "\n";
+echo '$relationsSorted = ' . \yii\helpers\VarDumper::dumpAsString($relations);
 echo "\n";
 ?>
 */
