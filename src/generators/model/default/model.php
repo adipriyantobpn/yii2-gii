@@ -17,28 +17,31 @@
 /* @var $uniqueIndexes array list of unique indexes for particular table, including primary-key (name => [columns]) */
 /* @var $uniqueIndexesSorted array uniquely-merged & sorted list of unique indexes for particular table, including primary-key (name => [columns]) */
 
+use yii\helpers\VarDumper;
+
 echo "<?php\n";
 ?>
 
-/*
 <?php
-// COMPLETED_TODO - track unique-indexes from tables & the sorted one (for debugging purpose)
-echo '$uniqueIndexes = ' . \yii\helpers\VarDumper::dumpAsString($uniqueIndexes);
-echo "\n";
-echo '$uniqueIndexesSorted = ' . \yii\helpers\VarDumper::dumpAsString($uniqueIndexesSorted);
-echo "\n";
+// COMPLETED_TODO - code that generated for debugging purpose SHOULD BE CONFIGURABLE via boolean property
+echo $generator->generateDebugMessageGroup('unique-indexes', [
+    // COMPLETED_TODO - track unique-indexes from tables & the sorted one (for debugging purpose)
+    'uniqueIndexes' => VarDumper::dumpAsString($uniqueIndexes),
+    'uniqueIndexesSorted' => VarDumper::dumpAsString($uniqueIndexesSorted),
+]);
+echo $generator->generateDebugMessageGroup('relations (provided by standard model-generator)', [
+    // COMPLETED_TODO - track relation array provided by model generator & the sorted one (for debugging purpose)
+    'relations' => VarDumper::dumpAsString($relations),
+]);
 
-// COMPLETED_TODO - track relation array provided by model generator & the sorted one (for debugging purpose)
-echo "\n";
-echo '$relations = ' . \yii\helpers\VarDumper::dumpAsString($relations);
 // COMPLETED_TODO - sort relations
 $relations = $generator->sortRelation($relations);
-// COMPLETED_TODO - track relation array provided by model generator & the sorted one (for debugging purpose)
-echo "\n";
-echo '$relationsSorted = ' . \yii\helpers\VarDumper::dumpAsString($relations);
-echo "\n";
+// COMPLETED_TODO - code that generated for debugging purpose SHOULD BE CONFIGURABLE via boolean property
+echo $generator->generateDebugMessageGroup('relations-sorted (after sorted in the template)', [
+    // COMPLETED_TODO - track relation array provided by model generator & the sorted one (for debugging purpose)
+    'relationsSorted' => VarDumper::dumpAsString($relations),
+]);
 ?>
-*/
 
 namespace <?= $generator->ns ?>;
 

@@ -55,6 +55,8 @@ class Generator extends \yii\gii\Generator
     // COMPLETED_TODO - static::getDb() generation in the base model SHOULD BE CONFIGURABLE via boolean property
     public $doNotGenerateGetDbInTheBaseModel = false;
 
+    // COMPLETED_TODO - code that generated for debugging purpose SHOULD BE CONFIGURABLE via boolean property
+    public $debugVariables = false;
     // COMPLETED_TODO - relation-based rules SHOULD HAVE GENERATED also in extended model
     private $_rulesFromRelation = [];
     // COMPLETED_TODO - track unique-indexes from tables & the sorted one (for debugging purpose)
@@ -1050,5 +1052,35 @@ class Generator extends \yii\gii\Generator
         }
 
         return false;
+    }
+
+    /**
+     * // COMPLETED_TODO - code that generated for debugging purpose SHOULD BE CONFIGURABLE via boolean property
+     *
+     * Generate debug message
+     *
+     * @param string $debugGroupMessage
+     * @param array $vars, with format ['varName' => 'varVal', ...]
+     * @return string
+     */
+    public function generateDebugMessageGroup($debugGroupMessage, $vars){
+        $msg = '';
+        if ($this->debugVariables) {
+            $msg .= "\n";
+            $msg .= <<<DEBUG_START
+/**
+ * -- DEBUGGING Variables -- $debugGroupMessage
+DEBUG_START;
+            foreach ($vars as $varName => $varVal) {
+                $msg .= "\n";
+                $msg .= "\${$varName} = " . $varVal;
+            }
+            $msg .= "\n";
+            $msg .= <<<DEBUG_FINISH
+*/
+DEBUG_FINISH;
+            $msg .= "\n";
+        }
+        return $msg;
     }
 }
