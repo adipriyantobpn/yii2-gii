@@ -14,6 +14,7 @@
 /* @var $rules string[] list of validation rules */
 /* @var $rulesFromRelation string[] list of validation rules which generated from related tables */
 /* @var $relations array list of relations (name => relation declaration) */
+/* @var $fkRelations array list of HasOne relations (name => relation declaration) */
 /* @var $uniqueIndexes array list of unique indexes for particular table, including primary-key (name => [columns]) */
 /* @var $uniqueIndexesSorted array uniquely-merged & sorted list of unique indexes for particular table, including primary-key (name => [columns]) */
 
@@ -41,10 +42,14 @@ echo $generator->generateDebugMessageGroup('relations-sorted (after sorted in th
     // COMPLETED_TODO - track relation array provided by model generator & the sorted one (for debugging purpose)
     'relationsSorted' => VarDumper::dumpAsString($relations),
 ]);
-echo $generator->generateDebugMessageGroup('table schema', [
-    // COMPLETED_TODO - track standard properties, provided by model-generator (for debugging purpose)
-    'tableSchema' => VarDumper::dumpAsString($tableSchema),
+echo $generator->generateDebugMessageGroup('FK relations', [
+    // COMPLETED_TODO - track relations from FK
+    'fkRelations' => VarDumper::dumpAsString($fkRelations),
 ]);
+ echo $generator->generateDebugMessageGroup('table schema', [
+     // COMPLETED_TODO - track standard properties, provided by model-generator (for debugging purpose)
+     'tableSchema' => VarDumper::dumpAsString($tableSchema),
+ ]);
 ?>
 
 namespace <?= $generator->extendedModelNs ?>;
@@ -105,6 +110,68 @@ class <?= $className ?> extends <?= '\\' . ltrim($generator->ns .'\\'. $classNam
         return new <?= $queryClassFullName ?>(get_called_class());
     }
 <?php endif; ?>
+
+    /**
+     * {@inheritdoc}
+     *
+     * Returns list of the columns whose values have been populated into this record.
+     */
+    public function fields()
+    {
+        $parentFields = parent::fields();
+        $fields = array_merge($parentFields, [
+<?php $baseClassReflection = new \ReflectionClass($generator->baseClass); if ($baseClassReflection->hasMethod('getInfo')): ?>
+            'info' => function ($model) { /** @var $model \<?= $generator->baseClass ?> */
+                return $model->getInfo();
+            },
+<?php endif; ?>
+<?php foreach ($properties as $property => $data): ?>
+            // '<?= $property ?>' => '<?= $property ?>',
+<?php endforeach; ?>
+        ]);
+
+<?php // @TODO - authentication & other sensitive column names SHOULD BE LISTED here by using regex ?>
+        /* Should remove fields that contain sensitive information */
+        // unset(
+        //     $fields['auth_key'], // EXAMPLE
+        //     $fields['password_hash'], // EXAMPLE
+        //     $fields['password_reset_token'] // EXAMPLE
+        // );
+
+        return $fields;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * Returns the list of the relations that have been populated into this record.
+     */
+    public function extraFields()
+    {
+        $parentExtraFields = parent::extraFields();
+        $extraFields = array_merge($parentExtraFields, $this->getFkRelationNames());
+
+        return $extraFields;
+    }
+
+<?php // COMPLETED_TODO - track relations from FK ?>
+    /**
+     * Return array of relations names, which is foreign-key based only
+     *
+     * @return array
+     */
+    public function getFkRelationNames()
+    {
+<?php if (empty($fkRelations)): ?>
+        return [];
+<?php else: ?>
+        return [
+<?php foreach ($fkRelations as $name => $relation): ?>
+            '<?= lcfirst($name) ?>' => '<?= lcfirst($name) ?>',
+<?php endforeach; ?>
+        ];
+<?php endif;?>
+    }
 <?php if (!empty($relations)): ?>
 
     // -- RELATION FUNCTIONS should be placed below --

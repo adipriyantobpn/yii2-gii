@@ -63,6 +63,9 @@ class Generator extends \yii\gii\Generator
     private $_uniqueIndexes;
     private $_uniqueIndexesSorted;
 
+    // COMPLETED_TODO - track relations from FK
+    private $_fkRelations = [];
+
 
     /**
      * {@inheritdoc}
@@ -251,6 +254,8 @@ class Generator extends \yii\gii\Generator
     {
         $files = [];
         $relations = $this->generateRelations();
+        // COMPLETED_TODO - track relations from FK
+        $fkRelations = $this->getFkRelations();
         $db = $this->getDbConnection();
         foreach ($this->getTableNames() as $tableName) {
             // model :
@@ -268,6 +273,8 @@ class Generator extends \yii\gii\Generator
                 // COMPLETED_TODO - relation-based rules SHOULD HAVE GENERATED also in extended model
                 'rulesFromRelation' => $this->_rulesFromRelation,
                 'relations' => isset($relations[$tableName]) ? $relations[$tableName] : [],
+                // COMPLETED_TODO - track relations from FK
+                'fkRelations' => isset($fkRelations[$tableName]) ? $fkRelations[$tableName] : [],
                 // COMPLETED_TODO - track unique-indexes from tables & the sorted one (for debugging purpose)
                 'uniqueIndexes' => $this->_uniqueIndexes,
                 'uniqueIndexesSorted' => $this->_uniqueIndexesSorted,
@@ -602,6 +609,12 @@ class Generator extends \yii\gii\Generator
                         $refClassName,
                         false,
                     ];
+                    // COMPLETED_TODO - track relations from FK
+                    $this->_fkRelations[$table->fullName][$relationName] = [
+                        "return \$this->hasOne($refClassName::class, $link);",
+                        $refClassName,
+                        false,
+                    ];
 
                     // Add relation for the referenced table
                     $hasMany = $this->isHasManyRelation($table, $fks);
@@ -642,6 +655,19 @@ class Generator extends \yii\gii\Generator
         $relations = array_combine($relKey, $relVal);
 
         return $relations;
+    }
+
+    /**
+     * // COMPLETED_TODO - track relations from FK
+     * @return array the re-ordered HasOne relation-array
+     */
+    public function getFkRelations()
+    {
+        if ($this->_fkRelations != []) {
+            return $this->sortRelation($this->_fkRelations);
+        }
+
+        return [];
     }
 
     /**
